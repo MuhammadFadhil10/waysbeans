@@ -3,11 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 	dto "waysbeans/dto/result"
 	"waysbeans/helper"
 	"waysbeans/models"
 	bcryptpkg "waysbeans/pkg/bcrypt"
+	jwttoken "waysbeans/pkg/jwt"
 	"waysbeans/repositories"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type handlerAuth struct {
@@ -70,6 +74,20 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helper.ResponseHelper(w, nil, userLogin, 0, true)
+	generateToken := jwt.MapClaims{}
+
+	generateToken["id"] = userLogin.ID
+	generateToken["exp"] = time.Now().Add(time.Hour * 3).Unix()
+
+	token, _ := jwttoken.CreateToken(&generateToken)
+
+	resp := map[string]models.UserLoginResponse{
+		"user": {
+			Email: userLogin.Email,
+			Token: token,
+		},
+	}
+
+	helper.ResponseHelper(w, nil, resp, 0, true)
 
 }
