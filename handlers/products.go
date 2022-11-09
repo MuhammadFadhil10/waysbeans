@@ -93,7 +93,7 @@ func (h *handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	product, err := h.ProductRepository.GetProductById(product, productId)
 
-	helper.ResponseHelper(w, err, product)
+	helper.ResponseHelper(w, err, product, http.StatusNotFound, true)
 
 }
 
