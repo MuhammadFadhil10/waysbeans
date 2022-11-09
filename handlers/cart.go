@@ -91,3 +91,42 @@ func (h *handlerCart) UpdateCartQty(w http.ResponseWriter, r *http.Request) {
 	helper.ResponseHelper(w, err, cart, http.StatusInternalServerError)
 
 }
+
+func (h *handlerCart) DeleteCartByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	cartId, _ := strconv.Atoi(mux.Vars(r)["cartId"])
+
+	var cartDeleted models.Cart
+	var err error
+	cartDeleted, err = h.CartRepository.DeleteCartByID(cartDeleted, cartId)
+
+	response := map[string]models.Cart{
+		"cartDeleted": cartDeleted,
+	}
+
+	if err != nil {
+		helper.ResponseHelper(w, err, response, http.StatusInternalServerError)
+		return
+	}
+
+	helper.ResponseHelper(w, err, response, http.StatusInternalServerError)
+
+}
+
+func (h *handlerCart) DeleteCartByUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userId, _ := strconv.Atoi(mux.Vars(r)["userId"])
+
+	var cartDeleted models.Cart
+
+	err := h.CartRepository.DeleteCartByUser(cartDeleted, userId)
+
+	if err != nil {
+		helper.ResponseHelper(w, err, cartDeleted, http.StatusInternalServerError)
+		return
+	}
+
+	helper.ResponseHelper(w, err, cartDeleted, http.StatusInternalServerError)
+}
