@@ -7,12 +7,19 @@ import (
 )
 
 type AuthRepository interface {
+	GetByEmail(user models.User, email string) (models.User, error)
 	CreateUser(user models.User) (models.User, error)
 	LoginUser(user models.User, email string) (models.User, error)
 }
 
 func RepositoryAuth(db *gorm.DB) *repository {
 	return &repository{db}
+}
+
+func (r *repository) GetByEmail(user models.User, email string) (models.User, error) {
+	err := r.db.First(&user, "email=?", email).Error
+
+	return user, err
 }
 
 func (r *repository) CreateUser(user models.User) (models.User, error) {
