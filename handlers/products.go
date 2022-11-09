@@ -93,19 +93,14 @@ func (h *handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	product, err := h.ProductRepository.GetProductById(product, productId)
 
-	helper.ResponseHelper(w, err, product, http.StatusNotFound, true)
+	helper.ResponseHelper(w, err, product, http.StatusNotFound)
 
 }
 
 func convertProductResponse(p []models.Products) map[string][]models.Products {
-	var products []models.Products
-
-	for _, product := range p {
-		products = append(products, product)
-	}
 
 	resp := map[string][]models.Products{
-		"products": products,
+		"products": p,
 	}
 
 	return resp

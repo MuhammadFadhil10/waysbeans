@@ -14,4 +14,5 @@ func CartRoutes(r *mux.Router) {
 
 	r.HandleFunc("/cart", h.AddToCart).Methods("POST")
 	r.HandleFunc("/carts", h.GetCarts).Methods("GET")
+	r.HandleFunc("/cart/{cartId}", h.UpdateCartQty).Methods("PATCH")
 }

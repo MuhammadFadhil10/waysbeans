@@ -3,10 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"time"
 	dto "waysbeans/dto/result"
 	"waysbeans/helper"
 	"waysbeans/models"
 	"waysbeans/repositories"
+
+	"github.com/gorilla/mux"
 )
 
 type handlerCart struct {
@@ -23,10 +27,17 @@ func (h *handlerCart) AddToCart(w http.ResponseWriter, r *http.Request) {
 	cart := models.Cart{}
 
 	err := json.NewDecoder(r.Body).Decode(&cart)
-	helper.ResponseHelper(w, err, nil, http.StatusInternalServerError, false)
+	if err != nil {
+		helper.ResponseHelper(w, err, nil, http.StatusInternalServerError)
+		return
+	}
 
 	cart, err = h.CartRepository.AddToCart(cart)
-	helper.ResponseHelper(w, err, cart, http.StatusBadRequest, true)
+	if err != nil {
+		helper.ResponseHelper(w, err, cart, http.StatusBadRequest)
+		return
+	}
+	helper.ResponseHelper(w, err, cart, http.StatusBadRequest)
 
 }
 
@@ -45,5 +56,38 @@ func (h *handlerCart) GetCarts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	helper.ResponseHelper(w, err, carts, http.StatusInternalServerError, true)
+	helper.ResponseHelper(w, err, carts, http.StatusInternalServerError)
+}
+
+func (h *handlerCart) UpdateCartQty(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	updateType := r.URL.Query()["update"]
+	cartId, _ := strconv.Atoi(mux.Vars(r)["cartId"])
+
+	var cartUpdate models.Cart
+	var err error
+	cartUpdate, err = h.CartRepository.GetCart(cartUpdate, cartId)
+
+	if len(updateType) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Status: "error", Message: "Missing query parameter (update)"}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	if updateType[0] == "add" {
+		cartUpdate.TotalPrice = cartUpdate.TotalPrice + (cartUpdate.TotalPrice / cartUpdate.Qty)
+		cartUpdate.Qty = cartUpdate.Qty + 1
+
+	} else {
+		cartUpdate.TotalPrice = cartUpdate.TotalPrice - (cartUpdate.TotalPrice / cartUpdate.Qty)
+		cartUpdate.Qty = cartUpdate.Qty - 1
+	}
+	cartUpdate.UpdateAt = time.Now()
+
+	cart, err := h.CartRepository.UpdateCartQty(cartUpdate, cartId)
+
+	helper.ResponseHelper(w, err, cart, http.StatusInternalServerError)
+
 }

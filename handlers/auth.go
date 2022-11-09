@@ -28,7 +28,10 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
 	decodeErr := json.NewDecoder(r.Body).Decode(&user)
-	helper.ResponseHelper(w, decodeErr, nil, http.StatusBadRequest, false)
+	if decodeErr != nil {
+		helper.ResponseHelper(w, decodeErr, nil, http.StatusBadRequest)
+		return
+	}
 
 	userExist, userErr := h.AuthRepository.GetByEmail(user, user.Email)
 
@@ -40,13 +43,16 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashedPassword, hashedPasswordErr := bcryptpkg.HashingPassword(user.Password)
-	helper.ResponseHelper(w, hashedPasswordErr, nil, http.StatusInternalServerError, false)
+	if hashedPasswordErr != nil {
+		helper.ResponseHelper(w, hashedPasswordErr, nil, http.StatusInternalServerError)
+		return
+	}
 	user.Password = hashedPassword
 
 	var err error
 	user, err = h.AuthRepository.CreateUser(user)
 
-	helper.ResponseHelper(w, err, user, http.StatusInternalServerError, true)
+	helper.ResponseHelper(w, err, user, http.StatusInternalServerError)
 }
 
 func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +61,10 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	var userRequest models.User
 
 	decodeErr := json.NewDecoder(r.Body).Decode(&userRequest)
-	helper.ResponseHelper(w, decodeErr, nil, http.StatusBadRequest, false)
+	if decodeErr != nil {
+		helper.ResponseHelper(w, decodeErr, nil, http.StatusBadRequest)
+		return
+	}
 
 	userLogin, err := h.AuthRepository.LoginUser(userRequest, userRequest.Email)
 	if err != nil {
@@ -88,6 +97,6 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	helper.ResponseHelper(w, nil, resp, 0, true)
+	helper.ResponseHelper(w, nil, resp, 0)
 
 }

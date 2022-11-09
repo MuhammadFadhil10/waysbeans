@@ -13,3 +13,13 @@ type Cart struct {
 	CreatedAt  time.Time    `json:"createdAT" gorm:"default:Now()"`
 	UpdateAt   time.Time    `json:"updatedAt" gorm:"default:null"`
 }
+
+type CartUpdateRequest struct {
+	ID         int `json:"id"`
+	Qty        int `json:"qty"`
+	TotalPrice int `json:"totalPrice"`
+}
+
+func (CartUpdateRequest) TableName() string {
+	return "carts"
+}
