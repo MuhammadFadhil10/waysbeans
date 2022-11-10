@@ -36,7 +36,10 @@ func main() {
 	// route init
 	routes.RoutesInit(r.PathPrefix("/api/v1").Subrouter())
 
+	// uploads path prefix
+	r.PathPrefix("/uploads").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
 	fmt.Println("server running on port ", PORT)
 
-	http.ListenAndServe(":"+PORT, handlers.CORS(allowedHeaders,allowedMethods,allowedOrigins)(r))
+	http.ListenAndServe(":"+PORT, handlers.CORS(allowedHeaders, allowedMethods, allowedOrigins)(r))
 }

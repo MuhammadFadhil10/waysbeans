@@ -2,6 +2,7 @@ package routes
 
 import (
 	"waysbeans/handlers"
+	"waysbeans/pkg/middleware"
 	"waysbeans/pkg/postgre"
 	"waysbeans/repositories"
 
@@ -13,6 +14,6 @@ func ProductRoutes(r *mux.Router) {
 	h := handlers.HandlerProduct(productRepository)
 
 	r.HandleFunc("/products", h.GetProducts).Methods("GET")
-	r.HandleFunc("/product/{productId}", h.GetProduct).Methods("GET")
-	r.HandleFunc("/product/create", h.CreateProducts).Methods("POST")
+	r.HandleFunc("/product/{productId}", middleware.Auth(h.GetProduct)).Methods("GET")
+	r.HandleFunc("/product/create", middleware.Auth(middleware.UploadFile(h.CreateProducts))).Methods("POST")
 }

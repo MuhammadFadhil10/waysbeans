@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	productdto "waysbeans/dto/products"
 	dto "waysbeans/dto/result"
@@ -55,12 +56,15 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 	stock, _ := strconv.Atoi(r.FormValue("stock"))
 	price, _ := strconv.Atoi(r.FormValue("price"))
 
+	filename := r.Context().Value("dataFile")
+	pathFile := os.Getenv("PATH_FILE")
+
 	request := productdto.CreateProductRequest{
 		Name:        r.FormValue("name"),
 		Stock:       stock,
 		Price:       price,
 		Description: r.FormValue("description"),
-		Photo:       r.FormValue("photo"),
+		Photo:       filename.(string),
 	}
 
 	product := models.Products{
@@ -68,7 +72,7 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 		Stock:       request.Stock,
 		Price:       request.Price,
 		Description: request.Description,
-		Photo:       request.Photo,
+		Photo:       pathFile + request.Photo,
 	}
 
 	product, err := h.ProductRepository.CreateProduct(product)

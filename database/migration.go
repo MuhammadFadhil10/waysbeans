@@ -7,7 +7,7 @@ import (
 )
 
 func RunMigration() {
-	if err := postgre.DB.AutoMigrate(&models.Products{}, &models.User{}, &models.Cart{}, &models.Transaction{}, &models.TransactionItem{}); err != nil {
+	if err := postgre.DB.AutoMigrate(&models.Products{}, &models.User{}, &models.Cart{}, &models.Transaction{}); err != nil {
 		fmt.Println(err)
 		panic("Migration Failed")
 	}
