@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	transactiondto "waysbeans/dto/transaction"
+	"waysbeans/models"
 	"waysbeans/repositories"
 )
 
@@ -18,7 +19,14 @@ func HandlerTransaction(TransactionRepository repositories.TransactionRepository
 func (h *handlerTransaction) CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	transactionRequest := transactiondto.CreateTransactionRequest{}
-	json.NewDecoder(r.Body).Decode(&transactionRequest)
+	request := transactiondto.CreateTransactionRequest{}
+	json.NewDecoder(r.Body).Decode(&request)
+
+	transaction := models.Transaction{
+		UserID: request.UserID,
+		Status: request.Status,
+		Products: request.Products,
+	}
+	h.TransactionRepository.CreateTransaction(transaction)
 
 }
