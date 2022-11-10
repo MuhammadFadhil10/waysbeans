@@ -9,6 +9,7 @@ import (
 	"waysbeans/pkg/postgre"
 	"waysbeans/routes"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -25,6 +26,11 @@ func main() {
 
 	r := mux.NewRouter()
 
+	// cors
+	var allowedHeaders = handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	var allowedMethods = handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"})
+	var allowedOrigins = handlers.AllowedOrigins([]string{"*"})
+
 	PORT := os.Getenv("PORT")
 
 	// route init
@@ -32,5 +38,5 @@ func main() {
 
 	fmt.Println("server running on port ", PORT)
 
-	http.ListenAndServe(":"+PORT, r)
+	http.ListenAndServe(":"+PORT, handlers.CORS(allowedHeaders,allowedMethods,allowedOrigins)(r))
 }
