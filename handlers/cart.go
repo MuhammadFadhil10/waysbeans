@@ -32,7 +32,16 @@ func (h *handlerCart) AddToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cart, err = h.CartRepository.AddToCart(cart)
+	cartExist, err := h.CartRepository.GetCartExist(1, cart.ProductID)
+
+	if err == nil {
+		cartExist.TotalPrice = cartExist.TotalPrice + (cartExist.TotalPrice / cartExist.Qty)
+		cartExist.Qty = cartExist.Qty + 1
+		cart, err = h.CartRepository.UpdateCartQty(cartExist, cartExist.ID)
+	} else {
+		cart, err = h.CartRepository.AddToCart(cart)
+	}
+
 	if err != nil {
 		helper.ResponseHelper(w, err, cart, http.StatusBadRequest)
 		return
