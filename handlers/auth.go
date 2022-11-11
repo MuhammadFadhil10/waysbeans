@@ -33,6 +33,13 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.Email == "" || user.FullName == "" || user.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Status: "error", Message: "Fill all register field!"}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	userExist, userErr := h.AuthRepository.GetByEmail(user, user.Email)
 
 	if userErr == nil {
@@ -63,6 +70,16 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	decodeErr := json.NewDecoder(r.Body).Decode(&userRequest)
 	if decodeErr != nil {
 		helper.ResponseHelper(w, decodeErr, nil, http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	var err error
+	user, err = h.AuthRepository.GetByEmail(user, userRequest.Email)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Status: "error", Message: "You are not registered!"}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
