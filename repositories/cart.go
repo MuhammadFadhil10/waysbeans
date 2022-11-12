@@ -9,6 +9,7 @@ import (
 type CartRepository interface {
 	AddToCart(cart models.Cart) (models.Cart, error)
 	GetCart(cart models.Cart, ID int) (models.Cart, error)
+	GetCartByUser(cart []models.Cart, userID int) ([]models.Cart, error)
 	GetCartExist(userID int, productId int) (models.Cart, error)
 	GetCarts(carts []models.Cart) ([]models.Cart, error)
 	UpdateCartQty(cart models.Cart, ID int) (models.Cart, error)
@@ -34,6 +35,12 @@ func (r *repository) GetCarts(carts []models.Cart) ([]models.Cart, error) {
 
 func (r *repository) GetCart(cart models.Cart, ID int) (models.Cart, error) {
 	err := r.db.Preload("User").Preload("Products").First(&cart, ID).Error
+
+	return cart, err
+}
+
+func (r *repository) GetCartByUser(cart []models.Cart, userID int) ([]models.Cart, error) {
+	err := r.db.Preload("User").Preload("Products").Find(&cart, "user_id=?", userID).Error
 
 	return cart, err
 }

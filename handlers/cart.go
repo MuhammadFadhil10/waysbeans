@@ -10,6 +10,7 @@ import (
 	"waysbeans/models"
 	"waysbeans/repositories"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 )
 
@@ -24,6 +25,9 @@ func HandlerCart(CartRepository repositories.CartRepository) *handlerCart {
 func (h *handlerCart) AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	userId := int(userInfo["id"].(float64))
+
 	cart := models.Cart{}
 
 	err := json.NewDecoder(r.Body).Decode(&cart)
@@ -32,13 +36,14 @@ func (h *handlerCart) AddToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cartExist, err := h.CartRepository.GetCartExist(1, cart.ProductID)
+	cartExist, err := h.CartRepository.GetCartExist(userId, cart.ProductID)
 
 	if err == nil {
 		cartExist.TotalPrice = cartExist.TotalPrice + (cartExist.TotalPrice / cartExist.Qty)
 		cartExist.Qty = cartExist.Qty + 1
 		cart, err = h.CartRepository.UpdateCartQty(cartExist, cartExist.ID)
 	} else {
+		cart.UserID = userId
 		cart, err = h.CartRepository.AddToCart(cart)
 	}
 
@@ -66,6 +71,25 @@ func (h *handlerCart) GetCarts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	helper.ResponseHelper(w, err, carts, http.StatusInternalServerError)
+}
+
+func (h *handlerCart) GetCartByUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	userId := int(userInfo["id"].(float64))
+
+	var carts []models.Cart
+	var err error
+
+	carts, err = h.CartRepository.GetCartByUser(carts, userId)
+	if err != nil {
+		helper.ResponseHelper(w, err, nil, http.StatusInternalServerError)
+		return
+	}
+
+	helper.ResponseHelper(w, err, carts, 0)
+
 }
 
 func (h *handlerCart) UpdateCartQty(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"waysbeans/handlers"
+	"waysbeans/pkg/middleware"
 	"waysbeans/pkg/postgre"
 	"waysbeans/repositories"
 
@@ -14,4 +15,5 @@ func AuthRoutes(r *mux.Router) {
 
 	r.HandleFunc("/auth/register", h.Register).Methods("POST")
 	r.HandleFunc("/auth/login", h.Login).Methods("POST")
+	r.HandleFunc("/auth/check", middleware.Auth(h.CheckAuth)).Methods("GET")
 }

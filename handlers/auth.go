@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 	dto "waysbeans/dto/result"
 	"waysbeans/helper"
@@ -55,6 +56,10 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Password = hashedPassword
+
+	userPhoto := os.Getenv("PATH_FILE") + "default_profile.png"
+
+	user.Photo = userPhoto
 
 	var err error
 	user, err = h.AuthRepository.CreateUser(user)
@@ -110,10 +115,35 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	resp := map[string]models.UserLoginResponse{
 		"user": {
 			Email: userLogin.Email,
+			Photo: userLogin.Photo,
 			Token: token,
 		},
 	}
 
 	helper.ResponseHelper(w, nil, resp, 0)
 
+}
+
+func (h *handlerAuth) CheckAuth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	userId := int(userInfo["id"].(float64))
+
+	var user models.User
+	user, _ = h.AuthRepository.GetAuthProfile(user, userId)
+
+	generateToken := jwt.MapClaims{}
+
+	// generateToken["id"] = userLogin.ID
+	generateToken["exp"] = time.Now().Add(time.Hour * 3).Unix()
+
+	token, _ := jwttoken.CreateToken(&generateToken)
+
+	resp := models.UserLoginResponse{
+		Email: user.Email,
+		Photo: user.Photo,
+		Token: token,
+	}
+	helper.ResponseHelper(w, nil, resp, 0)
 }
