@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 	dto "waysbeans/dto/result"
 	"waysbeans/helper"
@@ -57,9 +56,7 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Password = hashedPassword
 
-	userPhoto := os.Getenv("PATH_FILE") + "default_profile.png"
-
-	user.Photo = userPhoto
+	user.Photo = "https://res.cloudinary.com/dystw3dwp/image/upload/v1668363105/waysbeans/default_profile_xc2cnz.png"
 
 	var err error
 	user, err = h.AuthRepository.CreateUser(user)
