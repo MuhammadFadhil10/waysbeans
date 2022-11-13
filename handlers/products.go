@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"waysbeans/models"
 	"waysbeans/repositories"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gorilla/mux"
 )
 
@@ -56,15 +59,23 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 	stock, _ := strconv.Atoi(r.FormValue("stock"))
 	price, _ := strconv.Atoi(r.FormValue("price"))
 
-	filename := r.Context().Value("dataFile")
-	pathFile := os.Getenv("PATH_FILE")
+	filename := r.Context().Value("dataFile").(string)
+
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
+
+	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+	resp, err := cld.Upload.Upload(ctx, filename, uploader.UploadParams{Folder: "waysbeans"})
 
 	request := productdto.CreateProductRequest{
 		Name:        r.FormValue("productName"),
 		Stock:       stock,
 		Price:       price,
 		Description: r.FormValue("description"),
-		Photo:       filename.(string),
+		Photo:       resp.SecureURL,
 	}
 
 	product := models.Products{
@@ -72,10 +83,11 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 		Stock:       request.Stock,
 		Price:       request.Price,
 		Description: request.Description,
-		Photo:       pathFile + request.Photo,
+		Photo:       request.Photo,
 	}
 
-	product, err := h.ProductRepository.CreateProduct(product)
+	var createProduct models.Products
+	createProduct, err = h.ProductRepository.CreateProduct(product)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		response := dto.ErrorResult{Status: "error", Message: err.Error()}
@@ -83,7 +95,7 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Status: "success", Data: product}
+	response := dto.SuccessResult{Status: "success", Data: createProduct}
 	json.NewEncoder(w).Encode(response)
 
 }
