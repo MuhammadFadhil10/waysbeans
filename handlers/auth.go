@@ -117,6 +117,7 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 			Email: userLogin.Email,
 			Photo: userLogin.Photo,
 			Token: token,
+			Role:  userLogin.Role,
 		},
 	}
 

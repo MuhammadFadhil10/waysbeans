@@ -37,6 +37,7 @@ func (h *handlerUser) GetProfile(w http.ResponseWriter, r *http.Request) {
 		FullName: user.FullName,
 		Email:    user.Email,
 		Photo:    user.Photo,
+		Role:     user.Role,
 	}
 
 	helper.ResponseHelper(w, nil, userResponse, 0)

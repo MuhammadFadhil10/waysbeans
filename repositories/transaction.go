@@ -9,6 +9,7 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(t models.Transaction) (models.Transaction, error)
+	GetAllTransactions() ([]models.Transaction, error)
 	GetTransaction(transactionId int) (models.Transaction, error)
 	GetOneTransaction(ID string) (models.Transaction, error)
 	UpdateTransaction(status string, ID string) error
@@ -23,6 +24,14 @@ func (r *repository) CreateTransaction(t models.Transaction) (models.Transaction
 	err := r.db.Create(&t).Error
 
 	return t, err
+}
+
+func (r *repository) GetAllTransactions() ([]models.Transaction, error) {
+	var transactions []models.Transaction
+
+	err := r.db.Preload("Products").Preload("User").Find(&transactions).Error
+
+	return transactions, err
 }
 
 func (r *repository) GetTransaction(transactionId int) (models.Transaction, error) {

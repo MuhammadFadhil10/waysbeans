@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -85,6 +86,19 @@ func (h *handlerTransaction) CreateTransaction(w http.ResponseWriter, r *http.Re
 
 	helper.ResponseHelper(w, nil, snapResp, 0)
 
+}
+
+func (h *handlerTransaction) GetAllTransactions(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	transactions, err := h.TransactionRepository.GetAllTransactions()
+	fmt.Println(transactions)
+	if err != nil {
+		helper.ResponseHelper(w, err, nil, http.StatusInternalServerError)
+		return
+	}
+
+	helper.ResponseHelper(w, err, transactions, 0)
 }
 
 func (h *handlerTransaction) GetTransactionByUser(w http.ResponseWriter, r *http.Request) {

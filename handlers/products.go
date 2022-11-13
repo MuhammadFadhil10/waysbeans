@@ -60,7 +60,7 @@ func (h *handler) CreateProducts(w http.ResponseWriter, r *http.Request) {
 	pathFile := os.Getenv("PATH_FILE")
 
 	request := productdto.CreateProductRequest{
-		Name:        r.FormValue("name"),
+		Name:        r.FormValue("productName"),
 		Stock:       stock,
 		Price:       price,
 		Description: r.FormValue("description"),
@@ -98,6 +98,60 @@ func (h *handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	product, err := h.ProductRepository.GetProductById(product, productId)
 
 	helper.ResponseHelper(w, err, product, http.StatusNotFound)
+
+}
+
+func (h *handler) UpdateProductById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	productId, _ := strconv.Atoi(mux.Vars(r)["productId"])
+
+	stock, _ := strconv.Atoi(r.FormValue("stock"))
+	price, _ := strconv.Atoi(r.FormValue("price"))
+
+	filename := r.Context().Value("dataFile")
+	pathFile := os.Getenv("PATH_FILE")
+
+	var product models.Products
+
+	if filename != "" {
+		product.Photo = pathFile + filename.(string)
+	} else {
+		product.Photo = r.FormValue("photo")
+	}
+	product.Price = price
+	product.Stock = stock
+	product.Description = r.FormValue("description")
+	product.Name = r.FormValue("productName")
+
+	var updatedProduct models.Products
+	var err error
+
+	updatedProduct, err = h.ProductRepository.UpdateProductById(product, productId)
+	if err != nil {
+		helper.ResponseHelper(w, err, nil, http.StatusInternalServerError)
+		return
+	}
+
+	helper.ResponseHelper(w, nil, updatedProduct, 0)
+
+}
+
+func (h *handler) DeleteProductById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	productId, _ := strconv.Atoi(mux.Vars(r)["productId"])
+
+	err := h.ProductRepository.DeleteProductById(productId)
+	if err != nil {
+		helper.ResponseHelper(w, err, nil, http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]string{
+		"message": "success delete product",
+	}
+	helper.ResponseHelper(w, nil, resp, 0)
 
 }
 

@@ -7,7 +7,7 @@ type Cart struct {
 	Qty        int          `json:"qty"`
 	TotalPrice int          `json:"totalPrice"`
 	ProductID  int          `json:"productId"`
-	Products   Products     `json:"products" gorm:"foreignKey:ProductID;references:ID"`
+	Products   Products     `json:"products" gorm:"foreignKey:ProductID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	UserID     int          `json:"userId" `
 	User       UserResponse `json:"user"`
 	CreatedAt  time.Time    `json:"createdAT" gorm:"default:Now()"`
